@@ -1,0 +1,6 @@
+*.txt
+*.tex
+*.md
+bin/
+script/
+build.py
