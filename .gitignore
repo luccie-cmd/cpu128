@@ -1,6 +1,8 @@
+*.md
 *.txt
 *.tex
-*.md
+*.old
+.build-cache/
+__pycache__/
+.vscode/
 bin/
-script/
-build.py

@@ -1,0 +1,7 @@
+config: 'debug'
+compiler: 'gcc'
+outDir: 'bin'
+analyzer: 'yes'
+lto: 'no'
+asan: 'yes'
+usan: 'yes'
