@@ -6,6 +6,8 @@ main:
     xor r1, r1
     lad r2, [rel hello]
     mov r3, 7
+    lad r4, BYTE [rel main]
+    and r2, r4
     scall
 .loop:
     jmp .loop
