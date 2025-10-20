@@ -24,11 +24,11 @@ enum struct TokenType : uint16_t {
     Minus            = '-',
     Slash            = '/',
     Hashtag          = '#',
-    __MultibyteStart = 255,
+    __MultibyteStart = 128,
     Identifier,
     LitString,
     LitNumber,
-    __KeywordsStart = 300,
+    __KeywordsStart,
     Global,
     Extern,
     Section,
@@ -36,7 +36,11 @@ enum struct TokenType : uint16_t {
     Dword,
     Word,
     Byte,
-    Direct,
+    Rel,
+    DirectByte,
+    DirectWord,
+    DirectDword,
+    DirectQword,
 };
 class Token {
   private:

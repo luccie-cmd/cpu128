@@ -2,6 +2,7 @@
 #include <climits>
 #include <cstring>
 #include <lexer.h>
+#include <unordered_map>
 #define COMMENT_TOKEN ';'
 
 static bool isContinueIdentifier(char c) {
@@ -36,6 +37,11 @@ void Lexer::stripWhitespace() {
         this->nextChar();
     }
 }
+std::unordered_map<std::string, TokenType> identifierLookup = {
+    {"global", TokenType::Global},  {"extern", TokenType::Extern},  {"section", TokenType::Section},
+    {"qword", TokenType::Qword},    {"dword", TokenType::Dword},    {"word", TokenType::Word},
+    {"byte", TokenType::Byte},      {"db", TokenType::DirectByte},  {"dw", TokenType::DirectWord},
+    {"dd", TokenType::DirectDword}, {"dq", TokenType::DirectQword}, {"rel", TokenType::Rel}};
 Token* Lexer::lexIdentifier() {
     std::string tokenData(1, this->c);
     this->nextChar();
@@ -43,7 +49,8 @@ Token* Lexer::lexIdentifier() {
         tokenData.push_back(this->c);
         this->nextChar();
     }
-    return new Token(tokenData, TokenType::Identifier);
+    return new Token(tokenData, identifierLookup.contains(tokenData) ? identifierLookup.at(tokenData)
+                                                                     : TokenType::Identifier);
 }
 Token* Lexer::lexNumber() {
     uint8_t base = 0;
