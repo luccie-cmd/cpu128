@@ -1,0 +1,183 @@
+Prefixes:
+Opcode specific:
+0bOPTPNNNN
+OPTP:
+0000 -> Immediate
+0001 -> Register
+0010 -> Memory
+0011 -> None
+1000 -> Register, Register
+1001 -> Register, Memory
+1010 -> Register, Immediate
+1011 -> Memory, Register
+1100 -> Register, Register, Register
+1101 -> Register, Register, Immediate
+NNNN is at the top of every opcode
+Immediate is an 8 byte after the current opcode
+MR prefix:
+0bVDDDDDPP
+V is valid destination register, if this is set to 0, the destination register must be 0. May only be used with OPTP of 0b0010 and 0b0000
+DDDDD is the destination register
+PP is 0bRM
+Where R is if a register prefix follows and M is if a memory prefix follows
+Register prefix:
+0b0000ZZRRRR1RRRR2
+ZZ = Operand size
+00 -> 8 bits
+01 -> 16 bits
+10 -> 32 bits
+11 -> 64 bits
+Memory prefix:
+0bZZMMBBBBBIIIIISS
+ZZ = Operand size
+00 -> 8 bits
+01 -> 16 bits
+10 -> 32 bits
+11 -> 64 bits
+MM = Memory Mode:
+00 -> Base only
+01 -> Base + Disp32
+10 -> Base + Index * Scale
+11 -> Base + Index * Scale + Disp32
+Scale is encoded as log2(scale) with a maximum of 8 scale
+Disp32 comes after the opcode but before the immediate suffix.
+mov rDest, [rSrc+rDisp*scale+imm]
+0b10010000 # Opcode spefic
+0b00001001 # MR prefix
+0b0011000010001111 # Memory prefix
+0b00000001 # Opcode
+0x00000020 # Immediate
+
+Opcodes:
+1:
+    0b0000
+    mov rDest, imm
+    mov rDest, rSrc
+    mov rDest, [rSrc]
+    mov rDest, [rSrc+imm]
+    mov rDest, [rSrc+rDisp*scale+imm]
+    mov [rSrc], rDest
+    mov [rSrc+imm], rDest
+    mov [rSrc+rDisp*scale+imm], rDest
+2:
+    0b0000
+    lad rDest, [rSrc]
+    lad rDest, [rSrc+imm]
+    lad rDest, [rSrc+rDisp*scale+imm]
+4:
+    0b0000
+    xor rDest/rSrc1, imm
+    xor rDest/rSrc1, rSrc2
+5:
+    # sub and add assume 2s compliment
+    0b0000
+    sub rDest/rSrc1, imm
+    sub rDest/rSrc1, rSrc2
+    0b0001
+    add rDest/rSrc1, imm
+    add rDest/rSrc1, rSrc2
+6:
+    0b0010
+    shr rDest/rSrc1, imm
+    shr rDest/rSrc1, rSrc2
+    0b0011
+    shl rDest/rSrc1, imm
+    shl rDest/rSrc1, rSrc2
+    0b0000
+    asr rDest/rSrc1, imm
+    asr rDest/rSrc1, rSrc2
+7:
+    0b0000
+    and rDest/rSrc1, imm
+    and rDest/rSrc1, rSrc2
+    0b0001
+    or rDest/rSrc1, imm
+    or rDest/rSrc1, rSrc2
+8:
+    # Only smul assumes 2s compliment, normal mul assumes unsigned
+    0b0000
+    mul rDest, rSrc1, rSrc2
+    mul rDest, rSrc1, imm
+    0b0001
+    smul rDest, rSrc1, rSrc2
+    smul rDest, rSrc1, imm
+9:
+    0b0000
+    cmp rSrc1, rSrc2
+10:
+    # Assumes 2s compliment
+    0b0000
+    call relN
+    0b0001
+    ret
+11:
+    0b0000
+    push rSrc
+    0b0001
+    pop rSrc
+12:
+    # Assumes 2s compliment for every relN
+    0b0000
+    jmp relN
+    0b0001
+    jz relN
+    0b1001
+    jnz relN
+    0b0010
+    jc relN
+    0b1010
+    jnc relN
+    0b0011
+    je relN
+    0b1011
+    jne relN
+    0b0100
+    jl relN
+    0b1100
+    jle relN
+    0b0101
+    jg relN
+    0b1101
+    jge relN
+13:
+    0b0000
+    scall
+    RDCPR SCALL READDR
+    RDCLR RTEMP
+    AND RTEMP 0b1111111111111111111111111111111111111111111111111111111111101111
+    WRCLR RTEMP
+    LOADR R29, RIP
+    LOADR RIP, READDR
+14: # Supervisor instructions
+    0b0000
+    sret
+    0b0001
+    wrptp rSrc
+    0b0010
+    rdptp rDest
+    0b0011
+    wrclr rSrc
+    0b0100
+    rdclr rDest
+    0b0101
+    wrcpr rLoc, rSrc
+    0b0110
+    rdcpr rLoc, rDest
+
+
+# Info
+## Registers
+R0 - R29 -> General purpose registers.
+R30 -> Stack pointer
+R31 -> Instruction pointer
+PTP -> Stores the physical address of the top level of page table's address
+CLR -> Control register.
+CLR bit layout:
+bit 0 -> Page Enable
+bit 1-3 -> Max page level
+bit 4 -> User mode enable
+CPR -> Control Processor Register. Can enable, disable and alter certain parts of the CPU's execution logic.
+CPR locations:
+0x0 - 0x8: scall address
+## Startup
+The helix CPU has a fixed reset address of 0x0, with CLR having the paging bit disabled and current page level set to 0

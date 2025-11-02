@@ -1,6 +1,7 @@
 #if !defined(_ASSEMBLER_CONTEXT_H_)
 #define _ASSEMBLER_CONTEXT_H_
 #include "lexer.h"
+#include "parser.h"
 #include <string>
 
 namespace assembler{

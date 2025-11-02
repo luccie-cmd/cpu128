@@ -82,13 +82,13 @@ force_rebuild = False
 if OLD_CONFIG != CONFIG:
     force_rebuild = True
     print("Configuration changed, rebuilding...")
-CONFIG["CFLAGS"] = ['-c', '-DCOMPILE']
+CONFIG["CFLAGS"] = ['-c', '-DCOMPILE', '-ggdb']
 CONFIG["CFLAGS"] += ['-finline-functions']
-CONFIG["CFLAGS"] += ['-Werror', '-Wall', '-Wextra', '-Wpointer-arith', '-Wshadow']
+CONFIG["CFLAGS"] += ['-Werror', '-Wall', '-Wextra', '-Wpointer-arith', '-Wshadow', '-Wno-missing-field-initializers']
 CONFIG["CFLAGS"] += ['-march=native', '-mtune=native']
 CONFIG["CXXFLAGS"] = []
 CONFIG["ASFLAGS"] = ['-felf64']
-CONFIG["LDFLAGS"] = ['-Wl,--build-id=none', '-ffunction-sections', '-fdata-sections', '-Oz']
+CONFIG["LDFLAGS"] = ['-Wl,--build-id=none', '-ffunction-sections', '-fdata-sections', '-Oz', '-march=native', '-mtune=native']
 CONFIG["INCPATHS"] = ['-Iinclude', '-I /usr/include', '-I./']
 if "imageSize" not in CONFIG:
     CONFIG["imageSize"] = '128m'
@@ -109,13 +109,13 @@ else:
 
 if "yes" in CONFIG.get("usan"):
     CONFIG["CFLAGS"] += ['-fsanitize=undefined']
-    if "clang" not in CONFIG.get("compiler"):
-        CONFIG["LDFLAGS"] += ['-fsanitize=undefined']
+    # if "clang" not in CONFIG.get("compiler"):
+    CONFIG["LDFLAGS"] += ['-fsanitize=undefined']
         
 if "yes" in CONFIG.get("asan"):
     CONFIG["CFLAGS"] += ['-fsanitize=address']
-    if "clang" not in CONFIG.get("compiler"):
-        CONFIG["LDFLAGS"] += ['-fsanitize=address']
+    # if "clang" not in CONFIG.get("compiler"):
+    CONFIG["LDFLAGS"] += ['-fsanitize=address']
 
 if "gcc" in CONFIG.get("compiler"):
     if "yes" in CONFIG.get("analyzer"):
@@ -176,7 +176,7 @@ def buildCXX(file):
     options = CONFIG["CFLAGS"].copy()
     options += CONFIG["CXXFLAGS"].copy()
     options.append("-std=c++26")
-    if "yes" in CONFIG.get("analyzer"):
+    if "yes" in CONFIG.get("analyzer") and "-fanalyzer" in options:
         options.remove("-fanalyzer")
     command = compiler + " " + file
     for option in options:

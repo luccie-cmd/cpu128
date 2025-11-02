@@ -38,10 +38,9 @@ void Lexer::stripWhitespace() {
     }
 }
 std::unordered_map<std::string, TokenType> identifierLookup = {
-    {"global", TokenType::Global},  {"extern", TokenType::Extern},  {"section", TokenType::Section},
-    {"qword", TokenType::Qword},    {"dword", TokenType::Dword},    {"word", TokenType::Word},
-    {"byte", TokenType::Byte},      {"db", TokenType::DirectByte},  {"dw", TokenType::DirectWord},
-    {"dd", TokenType::DirectDword}, {"dq", TokenType::DirectQword}, {"rel", TokenType::Rel}};
+    {"global", TokenType::Global}, {"extern", TokenType::Extern},  {"section", TokenType::Section}, {"qword", TokenType::Qword},
+    {"dword", TokenType::Dword},   {"word", TokenType::Word},      {"byte", TokenType::Byte},       {"db", TokenType::DirectByte},
+    {"dw", TokenType::DirectWord}, {"dd", TokenType::DirectDword}, {"dq", TokenType::DirectQword},  {"rel", TokenType::Rel}};
 Token* Lexer::lexIdentifier() {
     std::string tokenData(1, this->c);
     this->nextChar();
@@ -49,13 +48,11 @@ Token* Lexer::lexIdentifier() {
         tokenData.push_back(this->c);
         this->nextChar();
     }
-    return new Token(tokenData, identifierLookup.contains(tokenData) ? identifierLookup.at(tokenData)
-                                                                     : TokenType::Identifier);
+    return new Token(tokenData, identifierLookup.contains(tokenData) ? identifierLookup.at(tokenData) : TokenType::Identifier);
 }
 Token* Lexer::lexNumber() {
     uint8_t base = 0;
-    static_assert(sizeof(unsigned long) == sizeof(uint64_t),
-                  "sizeof unsigned long is not equal to size of uint64_t");
+    static_assert(sizeof(unsigned long) == sizeof(uint64_t), "sizeof unsigned long is not equal to size of uint64_t");
     std::string_view view(this->data.data() + this->i - 1, this->data.size() - this->i);
     std::string      temp(view);
     char*            end   = nullptr;
